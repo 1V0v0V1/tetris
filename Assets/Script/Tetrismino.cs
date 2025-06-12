@@ -1,18 +1,44 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class NewBehaviourScript : MonoBehaviour
+public class Tetromino : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public float fallSpeed = 1f;
+    private float fallTimer = 0f;
 
-    // Update is called once per frame
     void Update()
     {
-        
+        HandleInput();
+        HandleFall();
+    }
+
+    void HandleInput()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+            transform.position += Vector3.left;
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+            transform.position += Vector3.right;
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+            transform.Rotate(0, 0, 90);
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+            transform.position += Vector3.down;
+    }
+
+    void HandleFall()
+    {
+        fallTimer += Time.deltaTime;
+        if (fallTimer >= fallSpeed)
+        {
+            transform.position += Vector3.down;
+            fallTimer = 0f;
+        }
+    }
+
+    void AddToGrid()
+    {
+        foreach (Transform block in transform)
+        {
+            Vector2 pos = GameManager.RoundVector(block.position);
+            GameManager.grid[(int)pos.x, (int)pos.y] = block;
+        }
     }
 }
