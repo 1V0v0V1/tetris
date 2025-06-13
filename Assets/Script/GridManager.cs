@@ -1,18 +1,23 @@
 using UnityEngine;
 
-public class GridLineGenerator : MonoBehaviour
+public class GridManager : MonoBehaviour
 {
-    public int width = 10;
-    public int height = 20;
-    public float cellSize = 0.5f;
-
+    public static int width = 10;
+    public static int height = 20;
+    private static float cellSize = 1f;
+    public static float offsetX;
+    public static float offsetY;
 
     public Material lineMaterial;
 
+    public static Transform[,] grid;
+
     void Start()
     {
-        float offsetX = -width * cellSize / 2f;
-        float offsetY = -height * cellSize / 2f;
+        grid = new Transform[width, height];
+
+        offsetX = -width * cellSize / 2f;
+        offsetY = -height * cellSize / 2f;
 
         // 横線
         for (int y = 0; y <= height; y++)
@@ -33,14 +38,11 @@ public class GridLineGenerator : MonoBehaviour
         }
     }
 
-
     void CreateLine(Vector3 start, Vector3 end)
     {
-
         GameObject lineObj = new GameObject("Line");
         LineRenderer lr = lineObj.AddComponent<LineRenderer>();
-        
-        
+
         lr.material = lineMaterial;
         lr.startColor = Color.green;
         lr.endColor = Color.green;
@@ -52,7 +54,40 @@ public class GridLineGenerator : MonoBehaviour
         lr.positionCount = 2;
         lr.SetPosition(0, start);
         lr.SetPosition(1, end);
-
     }
 
+    public static Vector2Int WorldToGrid(Vector3 worldPos, float cellSize)
+    {
+        float offsetX = -width * cellSize / 2f;
+        float offsetY = -height * cellSize / 2f;
+
+        int x = Mathf.FloorToInt((worldPos.x - offsetX) / cellSize);
+        int y = Mathf.FloorToInt((worldPos.y - offsetY) / cellSize);
+
+        return new Vector2Int(x, y);
+    }
+
+
+    public static bool IsCellOccupied(Vector3 worldPos, float cellSize)
+    {
+        Vector2Int cell = WorldToGrid(worldPos, cellSize);
+
+        if (cell.x < 0 || cell.x >= width || cell.y < 0 || cell.y >= height)
+            return true;
+
+        return grid[cell.x, cell.y] != null;
+    }
+
+    public static void AddToGrid(GameObject tetromino, float cellSize)
+    {
+        foreach (Transform block in tetromino.transform)
+        {
+            Vector2Int cell = WorldToGrid(block.position, cellSize);
+
+            if (cell.x >= 0 && cell.x < width && cell.y >= 0 && cell.y < height)
+            {
+                grid[cell.x, cell.y] = block;
+            }
+        }
+    }
 }
